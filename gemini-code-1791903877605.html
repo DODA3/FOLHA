@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Executivo - Folha Consolidada</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        .card-bg { background-color: #1e293b; border: 1px solid #334155; }
+        .card-hover:hover { border-color: #475569; transform: translateY(-2px); transition: all 0.2s ease; }
+        .filter-btn { transition: all 0.2s ease; }
+        .filter-btn.active { background-color: #3b82f6; color: #ffffff; border-color: #3b82f6; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4); }
+        .month-btn.active { background-color: #10b981; color: #ffffff; border-color: #10b981; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+    <!-- Header -->
+    <header class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-6 gap-4">
+        <div>
+            <div class="flex items-center gap-3">
+                <span class="bg-blue-600 text-white p-2.5 rounded-xl shadow-lg shadow-blue-500/30"><i class="fa-solid fa-chart-pie text-xl"></i></span>
+                <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight text-white">Dashboard Executivo - Folha Consolidada</h1>
+            </div>
+            <p id="header-competencia" class="text-slate-400 text-sm mt-1">Rede Bom Lugar | Competência: Agosto / 2026</p>
+        </div>
+        
+        <!-- Filters (Month & Store) -->
+        <div class="flex flex-wrap items-center gap-3">
+            <!-- Seletor de Mês -->
+            <div class="flex items-center gap-1.5 bg-slate-900/80 p-1.5 rounded-2xl border border-slate-800">
+                <button onclick="filterMonth('08')" id="btn-m-08" class="filter-btn month-btn active px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800 border border-slate-700">Agosto/2026</button>
+                <button onclick="filterMonth('09')" id="btn-m-09" class="filter-btn month-btn px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800 border border-slate-700">Setembro/2026</button>
+            </div>
+
+            <!-- Seletor de Loja -->
+            <div class="flex items-center gap-1.5 bg-slate-900/80 p-1.5 rounded-2xl border border-slate-800">
+                <button onclick="filterStore('all')" id="btn-all" class="filter-btn active px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800 border border-slate-700">Todas as Lojas</button>
+                <button onclick="filterStore('1')" id="btn-1" class="filter-btn px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800 border border-slate-700">Loja 1</button>
+                <button onclick="filterStore('2')" id="btn-2" class="filter-btn px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800 border border-slate-700">Loja 2</button>
+                <button onclick="filterStore('3')" id="btn-3" class="filter-btn px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800 border border-slate-700">Loja 3</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Top 4 Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <!-- Card Faturamento Total -->
+        <div class="card-bg rounded-2xl p-5 card-hover relative overflow-hidden flex items-center justify-between">
+            <div class="absolute top-0 left-0 w-1.5 h-full bg-cyan-500"></div>
+            <div>
+                <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Faturamento Operacional</p>
+                <h3 id="kpi-faturamento" class="text-xl font-extrabold text-white mt-1">R$ 0,00</h3>
+                <p class="text-xs text-slate-400 mt-1"><span id="kpi-faturamento-desc">Consolidado (Lojas 1, 2 e 3)</span></p>
+            </div>
+            <div class="bg-cyan-500/15 p-3 rounded-2xl text-cyan-400"><i class="fa-solid fa-chart-line text-xl"></i></div>
+        </div>
+
+        <!-- Card Total de Funcionários -->
+        <div class="card-bg rounded-2xl p-5 card-hover relative overflow-hidden flex items-center justify-between">
+            <div class="absolute top-0 left-0 w-1.5 h-full bg-blue-500"></div>
+            <div>
+                <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Total de Colaboradores</p>
+                <h3 id="kpi-total-colab" class="text-xl font-extrabold text-white mt-1">0</h3>
+                <p class="text-xs text-slate-400 mt-1"><span id="kpi-colab-desc">Quadro Consolidado</span></p>
+            </div>
+            <div class="bg-blue-500/15 p-3 rounded-2xl text-blue-400"><i class="fa-solid fa-users text-xl"></i></div>
+        </div>
+
+        <!-- Card Venda por Funcionário -->
+        <div class="card-bg rounded-2xl p-5 card-hover relative overflow-hidden flex items-center justify-between">
+            <div class="absolute top-0 left-0 w-1.5 h-full bg-emerald-500"></div>
+            <div>
+                <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Venda por Colaborador</p>
+                <h3 id="kpi-venda-colab" class="text-xl font-extrabold text-white mt-1">R$ 0,00</h3>
+                <p class="text-xs text-slate-400 mt-1"><span>Faturamento / Colaboradores</span></p>
+            </div>
+            <div class="bg-emerald-500/15 p-3 rounded-2xl text-emerald-400"><i class="fa-solid fa-user-tag text-xl"></i></div>
+        </div>
+
+        <!-- Card Custo Médio por Funcionário -->
+        <div class="card-bg rounded-2xl p-5 card-hover relative overflow-hidden flex items-center justify-between">
+            <div class="absolute top-0 left-0 w-1.5 h-full bg-violet-500"></div>
+            <div>
+                <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Custo Médio / Colab.</p>
+                <h3 id="kpi-custo-medio" class="text-xl font-extrabold text-violet-400 mt-1">R$ 0,00</h3>
+                <p class="text-xs text-slate-400 mt-1"><span>Custo Total / Colaboradores</span></p>
+            </div>
+            <div class="bg-violet-500/15 p-3 rounded-2xl text-violet-400"><i class="fa-solid fa-user-gear text-xl"></i></div>
+        </div>
+    </div>
+
+    <!-- Representatividade & Custo Total Row -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <!-- Card Representatividade do Custo sobre Faturamento -->
+        <div class="card-bg rounded-2xl p-5 card-hover relative overflow-hidden flex items-center justify-between">
+            <div class="absolute top-0 left-0 w-1.5 h-full bg-indigo-500"></div>
+            <div>
+                <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Representatividade do Custo Total da Folha</p>
+                <div class="flex items-baseline gap-3 mt-1">
+                    <h3 id="kpi-representatividade" class="text-2xl font-extrabold text-indigo-400">0,00%</h3>
+                    <span class="text-xs text-slate-400">(Custo Total / Faturamento)</span>
+                </div>
+                <p class="text-xs text-slate-400 mt-1">Custo Total Consolidado: <strong id="kpi-custo-total" class="text-white">R$ 0,00</strong></p>
+            </div>
+            <div class="bg-indigo-500/15 p-4 rounded-2xl text-indigo-400"><i class="fa-solid fa-percent text-2xl"></i></div>
+        </div>
+
+        <!-- Card Resumo Geral da Folha -->
+        <div class="card-bg rounded-2xl p-5 card-hover relative overflow-hidden flex items-center justify-between">
+            <div class="absolute top-0 left-0 w-1.5 h-full bg-amber-500"></div>
+            <div>
+                <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Indicador de Eficiência Operacional</p>
+                <h3 class="text-lg font-bold text-white mt-1">Gestão de Pessoal & Custos</h3>
+                <p class="text-xs text-slate-400 mt-1">Monitoramento por unidade e consolidação de encargos e benefícios.</p>
+            </div>
+            <div class="bg-amber-500/15 p-4 rounded-2xl text-amber-400"><i class="fa-solid fa-calculator text-2xl"></i></div>
+        </div>
+    </div>
+
+    <!-- KPI Cards Grid (8 Columns Detailed Breakdown) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-4 mb-8">
+        <!-- Card 1: Total Proventos -->
+        <div class="card-bg rounded-2xl p-4 card-hover relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-1.5 h-full bg-blue-500"></div>
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-slate-400 text-[10px] font-semibold uppercase tracking-wider">Proventos (Base)</p>
+                    <h3 id="kpi-proventos" class="text-base font-bold text-white mt-1">R$ 0,00</h3>
+                </div>
+                <div class="bg-blue-500/15 p-2 rounded-xl text-blue-400"><i class="fa-solid fa-sack-dollar text-sm"></i></div>
+            </div>
+            <div class="mt-2.5 pt-2 border-t border-slate-800 text-[10px] text-slate-400 flex justify-between">
+                <span id="kpi-sub-proventos">Consolidado</span>
+                <span id="kpi-colab-badge" class="text-blue-400 font-semibold">0 Colab.</span>
+            </div>
+        </div>
+
+        <!-- Card 2: Horas Extras -->
+        <div class="card-bg rounded-2xl p-4 card-hover relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-1.5 h-full bg-sky-500"></div>
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-slate-400 text-[10px] font-semibold uppercase tracking-wider">Horas Extras</p>
+                    <h3 id="kpi-he" class="text-base font-bold text-white mt-1">R$ 0,00</h3>
+                </div>
+                <div class="bg-sky-500/15 p-2 rounded-xl text-sky-400"><i class="fa-solid fa-clock text-sm"></i></div>
+            </div>
+            <div class="mt-2.5 pt-2 border-t border-slate-800 text-[10px] text-slate-400 flex justify-between">
+                <span>Adicionais</span>
+                <span class="text-sky-400 font-semibold">Remuneração</span>
+            </div>
+        </div>
+
+        <!-- Card 3: Encargos (INSS / FGTS) -->
+        <div class="card-bg rounded-2xl p-4 card-hover relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-1.5 h-full bg-amber-500"></div>
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-slate-400 text-[10px] font-semibold uppercase tracking-wider">Encargos Sociais</p>
+                    <h3 id="kpi-encargos" class="text-base font-bold text-white mt-1">R$ 0,00</h3>
+                </div>
+                <div class="bg-amber-500/15 p-2 rounded-xl text-amber-400"><i class="fa-solid fa-file-invoice-dollar text-sm"></i></div>
+            </div>
+            <div class="mt-2.5 pt-2 border-t border-slate-800 text-[10px] text-slate-400 flex justify-between">
+                <span id="kpi-inss">INSS: R$ 0k</span>
+                <span id="kpi-fgts">FGTS: R$ 0k</span>
+            </div>
+        </div>
+
+        <!-- Card 4: PicPay Mensal -->
+        <div class="card-bg rounded-2xl p-4 card-hover relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-1.5 h-full bg-emerald-500"></div>
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-slate-400 text-[10px] font-semibold uppercase tracking-wider">PicPay Mensal</p>
+                    <h3 id="kpi-picpay-mensal" class="text-base font-bold text-white mt-1">R$ 0,00</h3>
+                </div>
+                <div class="bg-emerald-500/15 p-2 rounded-xl text-emerald-400"><i class="fa-solid fa-wallet text-sm"></i></div>
+            </div>
+            <div class="mt-2.5 pt-2 border-t border-slate-800 text-[10px] text-slate-400 flex justify-between">
+                <span>Benefício Fixo</span>
+                <span class="text-emerald-400 font-semibold">Mensal</span>
+            </div>
+        </div>
+
+        <!-- Card 5: PicPay Compra de Folga -->
+        <div class="card-bg rounded-2xl p-4 card-hover relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-1.5 h-full bg-teal-500"></div>
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-slate-400 text-[10px] font-semibold uppercase tracking-wider">PicPay Compra Folga</p>
+                    <h3 id="kpi-picpay-folga" class="text-base font-bold text-white mt-1">R$ 0,00</h3>
+                </div>
+                <div class="bg-teal-500/15 p-2 rounded-xl text-teal-400"><i class="fa-solid fa-calendar-check text-sm"></i></div>
+            </div>
+            <div class="mt-2.5 pt-2 border-t border-slate-800 text-[10px] text-slate-400 flex justify-between">
+                <span>Conversão</span>
+                <span class="text-teal-400 font-semibold">Folgas</span>
+            </div>
+        </div>
+
+        <!-- Card 6: PicPay Assiduidade -->
+        <div class="card-bg rounded-2xl p-4 card-hover relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-1.5 h-full bg-cyan-500"></div>
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-slate-400 text-[10px] font-semibold uppercase tracking-wider">PicPay Assiduidade</p>
+                    <h3 id="kpi-picpay-assiduidade" class="text-base font-bold text-white mt-1">R$ 0,00</h3>
+                </div>
+                <div class="bg-cyan-500/15 p-2 rounded-xl text-cyan-400"><i class="fa-solid fa-award text-sm"></i></div>
+            </div>
+            <div class="mt-2.5 pt-2 border-t border-slate-800 text-[10px] text-slate-400 flex justify-between">
+                <span>Prêmio Presença</span>
+                <span class="text-cyan-400 font-semibold">Assiduidade</span>
+            </div>
+        </div>
+
+        <!-- Card 7: Convênio Médico -->
+        <div class="card-bg rounded-2xl p-4 card-hover relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-1.5 h-full bg-violet-500"></div>
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-slate-400 text-[10px] font-semibold uppercase tracking-wider">Convênio Médico</p>
+                    <h3 id="kpi-convenio" class="text-base font-bold text-white mt-1">R$ 0,00</h3>
+                </div>
+                <div class="bg-violet-500/15 p-2 rounded-xl text-violet-400"><i class="fa-solid fa-heart-pulse text-sm"></i></div>
+            </div>
+            <div class="mt-2.5 pt-2 border-t border-slate-800 text-[10px] text-slate-400 flex justify-between">
+                <span>Assistência Saúde</span>
+                <span class="text-violet-400 font-semibold">Empresa</span>
+            </div>
+        </div>
+
+        <!-- Card 8: Vale Transporte -->
+        <div class="card-bg rounded-2xl p-4 card-hover relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-1.5 h-full bg-rose-500"></div>
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-slate-400 text-[10px] font-semibold uppercase tracking-wider">Vale Transporte</p>
+                    <h3 id="kpi-vt" class="text-base font-bold text-white mt-1">R$ 0,00</h3>
+                </div>
+                <div class="bg-rose-500/15 p-2 rounded-xl text-rose-400"><i class="fa-solid fa-bus text-sm"></i></div>
+            </div>
+            <div class="mt-2.5 pt-2 border-t border-slate-800 text-[10px] text-slate-400 flex justify-between">
+                <span>Passes / Bilhete</span>
+                <span class="text-rose-400 font-semibold">Urbes</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart Section -->
+    <div class="max-w-2xl mx-auto mb-8">
+        <div class="card-bg rounded-2xl p-6">
+            <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2 justify-center">
+                <i class="fa-solid fa-chart-pie text-emerald-400"></i> Composição Geral de Custos Operacionais (%)
+            </h3>
+            <div style="height: 340px;">
+                <canvas id="custosChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script for Dynamic Filtering & Correct Calculations -->
+    <script>
+        let currentMonth = '08';
+        let currentStore = 'all';
+
+        const dataStore = {
+            "08": {
+                "all": {
+                    colaboradores: 181, proventos: 487305.71, horasExtras: 45126.55, inss: 71076.71, fgts: 30670.41,
+                    encargos: 101747.12, picpay_mensal: 83997.00, picpay_folga: 18176.00, picpay_assiduidade: 9840.00,
+                    convenio: 9715.00, vt: 12212.70, faturamento: 6999147.80, custoTotal: 768120.08,
+                    representatividade: 10.97, vendaPorColab: 38669.32, custoMedio: 4243.76,
+                    chartCustos: [487305.71, 45126.55, 71076.71, 83997.00, 18176.00, 9840.00, 30670.41, 9715.00, 12212.70]
+                },
+                "1": {
+                    colaboradores: 71, proventos: 203360.90, horasExtras: 17438.88, inss: 28464.35, fgts: 12369.87,
+                    encargos: 40834.22, picpay_mensal: 34823.00, picpay_folga: 10306.00, picpay_assiduidade: 3480.00,
+                    convenio: 5220.00, vt: 3750.65, faturamento: 2795565.22, custoTotal: 319213.65,
+                    representatividade: 11.42, vendaPorColab: 39374.16, custoMedio: 4495.97,
+                    chartCustos: [203360.90, 17438.88, 28464.35, 34823.00, 10306.00, 3480.00, 12369.87, 5220.00, 3750.65]
+                },
+                "2": {
+                    colaboradores: 62, proventos: 155123.32, horasExtras: 14566.98, inss: 25461.89, fgts: 10691.00,
+                    encargos: 36152.89, picpay_mensal: 28459.00, picpay_folga: 3877.00, picpay_assiduidade: 3520.00,
+                    convenio: 2175.00, vt: 6631.85, faturamento: 2204782.56, custoTotal: 250506.04,
+                    representatividade: 11.36, vendaPorColab: 35561.01, custoMedio: 4040.42,
+                    chartCustos: [155123.32, 14566.98, 25461.89, 28459.00, 3877.00, 3520.00, 10691.00, 2175.00, 6631.85]
+                },
+                "3": {
+                    colaboradores: 48, proventos: 128821.49, horasExtras: 13120.69, inss: 17150.47, fgts: 7609.54,
+                    encargos: 24760.01, picpay_mensal: 20715.00, picpay_folga: 3993.00, picpay_assiduidade: 2840.00,
+                    convenio: 2320.00, vt: 1830.20, faturamento: 1998800.02, custoTotal: 198400.39,
+                    representatividade: 9.93, vendaPorColab: 41641.67, custoMedio: 4133.34,
+                    chartCustos: [128821.49, 13120.69, 17150.47, 20715.00, 3993.00, 2840.00, 7609.54, 2320.00, 1830.20]
+                }
+            },
+            "09": {
+                "all": {
+                    colaboradores: 171, proventos: 484077.24, horasExtras: 36670.44, inss: 74225.35, fgts: 47048.47,
+                    encargos: 121273.82, picpay_mensal: 80088.00, picpay_folga: 17675.00, picpay_assiduidade: 9720.00,
+                    convenio: 7830.00, vt: 12583.60, faturamento: 6776931.95, custoTotal: 769918.10,
+                    representatividade: 11.36, vendaPorColab: 39631.18, custoMedio: 4502.45,
+                    chartCustos: [484077.24, 36670.44, 74225.35, 80088.00, 17675.00, 9720.00, 47048.47, 7830.00, 12583.60]
+                },
+                "1": {
+                    colaboradores: 65, proventos: 187145.81, horasExtras: 15403.43, inss: 29545.98, fgts: 11659.23,
+                    encargos: 41205.21, picpay_mensal: 33706.00, picpay_folga: 11575.00, picpay_assiduidade: 3480.00,
+                    convenio: 3480.00, vt: 3151.00, faturamento: 2759355.26, custoTotal: 299146.45,
+                    representatividade: 10.84, vendaPorColab: 42451.62, custoMedio: 4602.25,
+                    chartCustos: [187145.81, 15403.43, 29545.98, 33706.00, 11575.00, 3480.00, 11659.23, 3480.00, 3151.00]
+                },
+                "2": {
+                    colaboradores: 61, proventos: 176735.42, horasExtras: 10072.82, inss: 27387.71, fgts: 27728.97,
+                    encargos: 55116.68, picpay_mensal: 25694.00, picpay_folga: 3250.00, picpay_assiduidade: 3160.00,
+                    convenio: 2175.00, vt: 7585.60, faturamento: 2133503.24, custoTotal: 283789.52,
+                    representatividade: 13.30, vendaPorColab: 34975.46, custoMedio: 4652.29,
+                    chartCustos: [176735.42, 10072.82, 27387.71, 25694.00, 3250.00, 3160.00, 27728.97, 2175.00, 7585.60]
+                },
+                "3": {
+                    colaboradores: 45, proventos: 120196.01, horasExtras: 11194.19, inss: 17291.66, fgts: 7660.27,
+                    encargos: 24951.93, picpay_mensal: 20688.00, picpay_folga: 2850.00, picpay_assiduidade: 3080.00,
+                    convenio: 2175.00, vt: 1847.00, faturamento: 1884073.45, custoTotal: 186982.13,
+                    representatividade: 9.92, vendaPorColab: 41868.30, custoMedio: 4155.16,
+                    chartCustos: [120196.01, 11194.19, 17291.66, 20688.00, 2850.00, 3080.00, 7660.27, 2175.00, 1847.00]
+                }
+            }
+        };
+
+        function formatBRL(val) {
+            return 'R$ ' + (val || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        const ctxCustos = document.getElementById('custosChart').getContext('2d');
+        const custosChart = new Chart(ctxCustos, {
+            type: 'doughnut',
+            data: {
+                labels: ['Proventos Base', 'Horas Extras', 'INSS', 'PicPay Mensal', 'PicPay Folga', 'PicPay Assiduidade', 'FGTS', 'Convênio Médico', 'Vale Transporte'],
+                datasets: [{
+                    data: dataStore["08"]["all"].chartCustos,
+                    backgroundColor: ['#3b82f6', '#38bdf8', '#f59e0b', '#10b981', '#14b8a6', '#06b6d4', '#ef4444', '#8b5cf6', '#ec4899'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { 
+                        position: 'bottom', 
+                        labels: { 
+                            color: '#94a3b8', 
+                            boxWidth: 10,
+                            font: { size: 10 },
+                            generateLabels: function(chart) {
+                                const data = chart.data;
+                                if (data.labels.length && data.datasets.length) {
+                                    const dataset = data.datasets[0];
+                                    const total = dataset.data.reduce((acc, val) => acc + val, 0);
+                                    return data.labels.map((label, i) => {
+                                        const value = dataset.data[i];
+                                        const percentage = total > 0 ? ((value / total) * 100).toFixed(1).replace('.', ',') : '0';
+                                        return {
+                                            text: `${label} (${percentage}%)`,
+                                            fillStyle: dataset.backgroundColor[i],
+                                            strokeStyle: dataset.backgroundColor[i],
+                                            lineWidth: 0,
+                                            hidden: false,
+                                            index: i
+                                        };
+                                    });
+                                }
+                                return [];
+                            }
+                        } 
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                let value = context.raw || 0;
+                                let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                let percentage = total > 0 ? ((value / total) * 100).toFixed(2).replace('.', ',') : '0';
+                                let formattedVal = value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                                return ` ${label}: ${formattedVal} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        function filterMonth(monthKey) {
+            currentMonth = monthKey;
+            document.querySelectorAll('.month-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('btn-m-' + monthKey).classList.add('active');
+            
+            const monthText = monthKey === '08' ? 'Agosto / 2026' : 'Setembro / 2026';
+            document.getElementById('header-competencia').innerText = 'Rede Bom Lugar | Competência: ' + monthText;
+
+            updateDashboard();
+        }
+
+        function filterStore(storeId) {
+            currentStore = storeId;
+            document.querySelectorAll('[id^="btn-"]').forEach(btn => {
+                if(!btn.id.startsWith('btn-m-')) btn.classList.remove('active');
+            });
+            document.getElementById('btn-' + storeId).classList.add('active');
+
+            updateDashboard();
+        }
+
+        function updateDashboard() {
+            const d = dataStore[currentMonth][currentStore];
+            if (!d) return;
+
+            document.getElementById('kpi-faturamento').innerText = formatBRL(d.faturamento);
+            document.getElementById('kpi-faturamento-desc').innerText = currentStore === 'all' ? 'Consolidado (Lojas 1, 2 e 3)' : 'Unidade - Loja ' + currentStore;
+            
+            document.getElementById('kpi-total-colab').innerText = d.colaboradores;
+            document.getElementById('kpi-colab-desc').innerText = currentStore === 'all' ? 'Quadro Consolidado' : 'Equipe Loja ' + currentStore;
+
+            document.getElementById('kpi-venda-colab').innerText = formatBRL(d.vendaPorColab);
+            document.getElementById('kpi-custo-medio').innerText = formatBRL(d.custoMedio);
+
+            document.getElementById('kpi-representatividade').innerText = (d.representatividade || 0).toFixed(2).replace('.', ',') + '%';
+            document.getElementById('kpi-custo-total').innerText = formatBRL(d.custoTotal);
+
+            document.getElementById('kpi-proventos').innerText = formatBRL(d.proventos);
+            document.getElementById('kpi-colab-badge').innerText = d.colaboradores + ' Colab.';
+            document.getElementById('kpi-sub-proventos').innerText = currentStore === 'all' ? 'Consolidado' : 'Loja ' + currentStore;
+
+            document.getElementById('kpi-he').innerText = formatBRL(d.horasExtras);
+
+            document.getElementById('kpi-encargos').innerText = formatBRL(d.encargos);
+            document.getElementById('kpi-inss').innerText = 'INSS: R$ ' + ((d.inss || 0) / 1000).toFixed(1) + 'k';
+            document.getElementById('kpi-fgts').innerText = 'FGTS: R$ ' + ((d.fgts || 0) / 1000).toFixed(1) + 'k';
+
+            document.getElementById('kpi-picpay-mensal').innerText = formatBRL(d.picpay_mensal);
+            document.getElementById('kpi-picpay-folga').innerText = formatBRL(d.picpay_folga);
+            document.getElementById('kpi-picpay-assiduidade').innerText = formatBRL(d.picpay_assiduidade);
+
+            document.getElementById('kpi-convenio').innerText = formatBRL(d.convenio);
+            document.getElementById('kpi-vt').innerText = formatBRL(d.vt);
+
+            custosChart.data.datasets[0].data = d.chartCustos;
+            custosChart.update();
+        }
+
+        // Inicializa o Dashboard
+        updateDashboard();
+    </script>
+</body>
+</html>
