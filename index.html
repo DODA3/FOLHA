@@ -38,6 +38,7 @@
             <div class="flex items-center gap-1.5 bg-slate-900/80 p-1.5 rounded-2xl border border-slate-800">
                 <button onclick="filterMonth('08')" id="btn-m-08" class="filter-btn month-btn active px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800 border border-slate-700">Agosto/2026</button>
                 <button onclick="filterMonth('09')" id="btn-m-09" class="filter-btn month-btn px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800 border border-slate-700">Setembro/2026</button>
+                <button onclick="filterMonth('10')" id="btn-m-10" class="filter-btn month-btn px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800 border border-slate-700">Outubro/2026</button>
             </div>
 
             <!-- Seletor de Loja -->
@@ -333,6 +334,36 @@
                     representatividade: 9.33, vendaPorColab: 41868.30, custoMedio: 3906.40,
                     chartCustos: [109001.82, 11194.19, 17291.66, 20688.00, 2850.00, 3080.00, 7660.27, 2175.00, 1847.00]
                 }
+            },
+            "10": {
+                "all": {
+                    colaboradores: 175, proventos: 478420.18, horasExtras: 34657.77, inss: 72705.91, fgts: 32079.88,
+                    encargos: 104785.79, picpay_mensal: 84773.00, picpay_folga: 23742.00, picpay_assiduidade: 8700.00,
+                    convenio: 7830.00, vt: 12533.90, faturamento: 7056265.57, custoTotal: 720785.56,
+                    representatividade: 10.21, vendaPorColab: 40321.52, custoMedio: 4118.77,
+                    chartCustos: [443762.41, 34657.77, 72705.91, 84773.00, 23742.00, 8700.00, 32079.88, 7830.00, 12533.90]
+                },
+                "1": {
+                    colaboradores: 68, proventos: 196945.22, horasExtras: 15667.99, inss: 28972.53, fgts: 13386.43,
+                    encargos: 42358.96, picpay_mensal: 35714.00, picpay_folga: 14422.00, picpay_assiduidade: 3540.00,
+                    convenio: 4060.00, vt: 2950.70, faturamento: 2864636.89, custoTotal: 299991.88,
+                    representatividade: 10.47, vendaPorColab: 42127.01, custoMedio: 4411.65,
+                    chartCustos: [181277.23, 15667.99, 28972.53, 35714.00, 14422.00, 3540.00, 13386.43, 4060.00, 2950.70]
+                },
+                "2": {
+                    colaboradores: 57, proventos: 149931.51, horasExtras: 9112.85, inss: 26481.01, fgts: 10539.71,
+                    encargos: 37020.72, picpay_mensal: 28558.00, picpay_folga: 3050.00, picpay_assiduidade: 2160.00,
+                    convenio: 1740.00, vt: 6995.30, faturamento: 2248578.06, custoTotal: 234455.53,
+                    representatividade: 10.43, vendaPorColab: 39448.74, custoMedio: 4113.25,
+                    chartCustos: [140818.66, 9112.85, 26481.01, 28558.00, 3050.00, 2160.00, 10539.71, 1740.00, 6995.30]
+                },
+                "3": {
+                    colaboradores: 50, proventos: 131543.45, horasExtras: 9876.93, inss: 17252.38, fgts: 8153.74,
+                    encargos: 25406.12, picpay_mensal: 20501.00, picpay_folga: 6270.00, picpay_assiduidade: 3000.00,
+                    convenio: 2030.00, vt: 2587.90, faturamento: 1943050.62, custoTotal: 196338.15,
+                    representatividade: 10.10, vendaPorColab: 38861.01, custoMedio: 3926.76,
+                    chartCustos: [121666.52, 9876.93, 17252.38, 20501.00, 6270.00, 3000.00, 8153.74, 2030.00, 2587.90]
+                }
             }
         };
 
@@ -404,7 +435,7 @@
             document.querySelectorAll('.month-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById('btn-m-' + monthKey).classList.add('active');
             
-            const monthText = monthKey === '08' ? 'Agosto / 2026' : 'Setembro / 2026';
+            const monthText = monthKey === '08' ? 'Agosto / 2026' : (monthKey === '09' ? 'Setembro / 2026' : 'Outubro / 2026');
             document.getElementById('header-competencia').innerText = 'Rede Bom Lugar | Competência: ' + monthText;
 
             updateDashboard();
